@@ -1,7 +1,8 @@
 # multi_channel
 一个groovy gradle plugin，用于gradle构建多渠道apk。
 ##原理
-基于底包向apk中添加/assets/channel_info文件，并删除apk的META-INF目录，重新签名
+基于底包（android gradle官方插件打出来的包）向apk中添加/assets/channel_info文件，并删除apk的META-INF目录，重新签名。
+简单来说就是，当android gradle插件打包完成后，解压生成的apk，然后向/assets/目录中添加一个渠道文件，然后再重新签名。
 		
 
 * 比传统的productFlavors方式更高效，单个apk生成时间在20s左右。
@@ -26,12 +27,12 @@ multichannel {
     //命名规则后缀
     subfix = '';
     channelConfig {
-        aBase {
+        aBase { //注意需要与自定义的 android{ productFlavors{ aBase{}}} 同名
             // 基于aBase底包的渠道列表,渠道列表自行整理
             childFlavors = readChannelFromFile('./channel1.txt')
         }
 
-        bBase {
+        bBase {//需要与 productFlavors 同名
             // 基于bBase底包的渠道列表,渠道列表自行整理
             childFlavors = readChannelFromFile('./channel2.txt')
         }

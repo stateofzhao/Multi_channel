@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/multi_channel.iml" filepath="$PROJECT_DIR$/multi_channel.iml" group="multi_channel" />
-      <module fileurl="file://$PROJECT_DIR$/multi_channel_plugin/multi_channel_plugin.iml" filepath="$PROJECT_DIR$/multi_channel_plugin/multi_channel_plugin.iml" group="multi_channel/multi_channel_plugin" />
+      <module fileurl="file://$PROJECT_DIR$/multi_channel.iml" filepath="$PROJECT_DIR$/multi_channel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/multi_channel_plugin/multi_channel.multi_channel_plugin.iml" filepath="$PROJECT_DIR$/.idea/modules/multi_channel_plugin/multi_channel.multi_channel_plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/multi_channel_plugin/multi_channel.multi_channel_plugin.main.iml" filepath="$PROJECT_DIR$/.idea/modules/multi_channel_plugin/multi_channel.multi_channel_plugin.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/multi_channel_plugin/multi_channel.multi_channel_plugin.test.iml" filepath="$PROJECT_DIR$/.idea/modules/multi_channel_plugin/multi_channel.multi_channel_plugin.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/multi_channel_tools/multi_channel_tools.iml" filepath="$PROJECT_DIR$/multi_channel_tools/multi_channel_tools.iml" />
     </modules>
   </component>

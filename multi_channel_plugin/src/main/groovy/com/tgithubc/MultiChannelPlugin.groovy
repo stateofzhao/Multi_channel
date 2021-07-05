@@ -25,43 +25,46 @@ class MultiChannelPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        project.extensions.create("multichannel", MultiChannelPluginExtension)
+        project.extensions.create("multichannel", MultiChannelPluginExtension)//注册扩展 MultiChannelPluginExtension
+        //注册扩展 channelConfig
         project.multichannel.extensions.channelConfig = project.container(ChannelExtension) { String name ->
             ChannelExtension channelExtension = project.gradle.services.get(Instantiator).newInstance(ChannelExtension, name)
             assert channelExtension instanceof ExtensionAware
             return channelExtension
         }
 
-        project.afterEvaluate {
+        project.afterEvaluate {//project对应的gradle文件解析完毕后调用
             def hasApp = project.plugins.withType(AppPlugin)
             if (!hasApp) {
                 return
             }
 
             final def log = project.logger
-            final def variants = project.android.applicationVariants
+            final def variants = project.android.applicationVariants //所有打包变体是个Collection
 
-            if (project.multichannel.jarsignerPath) {
+            if (project.multichannel.jarsignerPath) {//配置签名工具路径
                 jarsignerExe = project.multichannel.jarsignerPath
-            } else {
+            } else {//使用默认路径
                 jarsignerExe = System.properties.'java.home' + File.separator + JARSIGNER_EXE
             }
 
-            if (project.multichannel.zipalignPath) {
+            if (project.multichannel.zipalignPath) {//配置zip对齐工具路径
                 zipalignExe = project.multichannel.zipalignPath
-            } else {
+            } else {//使用默认路径
                 zipalignExe = "${project.android.getSdkDirectory().getAbsolutePath()}" + File.separator + "build-tools" + File.separator + project.android.buildToolsVersion + File.separator + ZIPALIGN_EXE
             }
 
             log.debug("jarsignerExe: " + jarsignerExe)
             log.debug("zipalignExe: " + zipalignExe)
 
+            //循环所有变体(productFlavors)，
             variants.all { variant ->
-                def flavorName = variant.properties.get('flavorName')
+                def flavorName = variant.properties.get('flavorName')//android.productFlavors对应的名称
 
-                variant.assemble.doLast {
+                variant.assemble.doLast {//变体的 assemble 任务执行完毕后包已经打好并且签名完毕
                     def defaultSignConfig = project.multichannel.defaultSigningConfig
 
+                    //
                     project.multichannel.channelConfig.each() { config ->
                         if (flavorName.equals(config.name)) {
                             log.debug("Generate channel based on $config.name")
@@ -106,7 +109,7 @@ class MultiChannelPlugin implements Plugin<Project> {
         }
     }
 
-
+    //解压生成的签名apk，然后读取channel注入到 apk 的asset目录下，之后再重新签名
     void genApkWithChannel(Project project, String apkPath, String apkName, String channel, SigningConfig signConfig) throws IOException, InterruptedException {
         def log = project.logger
 
@@ -150,11 +153,7 @@ class MultiChannelPlugin implements Plugin<Project> {
         Files.move(tempFile.toPath(), tempApkFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
 
         // re-sign apk
-        String signCmd = (jarsignerExe + " -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore "
-                + signConfig.getStoreFile().getAbsolutePath()
-                + " -storepass " + signConfig.getStorePassword() + " -keypass " + signConfig.getKeyPassword() + " "
-                + tempApkFile.getAbsolutePath().replaceAll(" ", "\" \"")
-                + " " + signConfig.getKeyAlias())
+        String signCmd = (jarsignerExe + " -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore " + signConfig.getStoreFile().getAbsolutePath() + " -storepass " + signConfig.getStorePassword() + " -keypass " + signConfig.getKeyPassword() + " " + tempApkFile.getAbsolutePath().replaceAll(" ", "\" \"") + " " + signConfig.getKeyAlias())
 
         if (execCmdAndWait(signCmd, true) == 0) {
             log.debug("jarsigner process: " + tempApkFile.getAbsolutePath())
@@ -164,9 +163,7 @@ class MultiChannelPlugin implements Plugin<Project> {
         }
 
         // zipalign
-        String zipAlignCmd = (zipalignExe + " -v 4 "
-                + tempApkFile.getAbsolutePath().replaceAll(" ", "\" \"")
-                + " " + outFile.getAbsolutePath().replaceAll(" ", "\" \""))
+        String zipAlignCmd = (zipalignExe + " -v 4 " + tempApkFile.getAbsolutePath().replaceAll(" ", "\" \"") + " " + outFile.getAbsolutePath().replaceAll(" ", "\" \""))
 
         if (execCmdAndWait(zipAlignCmd, true) == 0) {
             log.debug("zipalign process: " + tempApkFile.getAbsolutePath())
